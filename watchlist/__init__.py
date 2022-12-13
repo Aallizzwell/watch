@@ -25,8 +25,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 在扩展类实例化前加载配置
 db = SQLAlchemy(app)
 
+# 实例化扩展类
+login_manager = LoginManager(app)
+# 如果未登录的用户访问对应的 URL，Flask-Login 会把用户重定向到登录页面，并显示一个错误提示。为了让这个重定向操作正确执行，
+# 我们还需要把 login_manager.login_view 的值设为我们程序的登录视图端点（函数名）
+login_manager.login_view = 'login'
 
-# login_manager = LoginManager(app)
+
+# 如果你需要的话，可以通过设置 login_manager.login_message 来自定义错误提示消息。
+# login_manager.login_message = 'Your custom message'
+
+
+# 创建用户加载回调函数，接受用户 ID 作为参数
+@login_manager.user_loader
+def load_user(user_id):
+    from watchlist.models import User
+    # 用 ID 作为 User 模型的主键查询对应的用户
+    user = User.query.get(int(user_id))
+    return user
 
 
 @app.context_processor
